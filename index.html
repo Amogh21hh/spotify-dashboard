@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Analytical Dashboard - Spotify 2023 Hits</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f0f12;
+            --card-bg-color: #1a1a21;
+            --text-color: #e3e3e3;
+            --text-muted-color: #9a9aa0;
+            --accent-color: #1DB954;
+            --border-color: #31313a;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+            --blue-color: #2196F3;
+            --red-color: #F44336;
+            --yellow-color: #FFC107;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 24px;
+            display: flex;
+            justify-content: center;
+        }
+        .dashboard-container {
+            width: 100%;
+            max-width: 1600px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        header {
+            text-align: center;
+        }
+        header h1 {
+            font-size: 2.8rem;
+            margin: 0;
+            font-weight: 700;
+        }
+        header p {
+            font-size: 1.2rem;
+            color: var(--text-muted-color);
+            margin-top: 8px;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+        }
+        .card {
+            background-color: var(--card-bg-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 24px var(--shadow-color);
+        }
+        .metric-card {
+            grid-column: span 3;
+        }
+        .metric-card h3 {
+            margin: 0 0 12px 0;
+            font-size: 1.1rem;
+            color: var(--text-muted-color);
+            font-weight: 600;
+        }
+        .metric-card .value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+        .metric-card .value .unit {
+             font-size: 1.5rem;
+             color: var(--text-muted-color);
+        }
+        .chart-card {
+            grid-column: span 6;
+            height: 400px;
+        }
+        .table-card {
+            grid-column: span 12;
+        }
+        .table-card h3 {
+            margin-top: 0;
+            font-size: 1.5rem;
+        }
+        .table-wrapper {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        thead th {
+            background-color: #25252d;
+            position: sticky;
+            top: 0;
+            font-weight: 600;
+        }
+        tbody tr:hover {
+            background-color: #25252d;
+        }
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .commentary-card {
+            grid-column: 1 / -1;
+            border-left: 5px solid var(--accent-color);
+        }
+        .commentary-card h3 {
+            margin-top: 0;
+            font-size: 1.5rem;
+        }
+        .commentary-card ul {
+            padding-left: 20px;
+            margin: 0;
+            list-style-type: '✅ ';
+        }
+        .commentary-card li {
+            margin-bottom: 12px;
+            line-height: 1.6;
+            padding-left: 10px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .metric-card { grid-column: span 6; }
+            .chart-card { grid-column: span 6; }
+        }
+        @media (max-width: 768px) {
+            .grid-container { grid-template-columns: 1fr; }
+            .metric-card, .chart-card, .table-card { grid-column: span 1; }
+            header h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header>
+            <h1>Spotify 2023 Most Streamed Songs</h1>
+            <p>An In-Depth Analysis of Musical Trends and Attributes</p>
+        </header>
+
+        <div class="grid-container">
+            <!-- Metric Cards -->
+            <div class="card metric-card">
+                <h3>Avg. Danceability</h3>
+                <span class="value">67<span class="unit">%</span></span>
+            </div>
+            <div class="card metric-card">
+                <h3>Avg. Energy</h3>
+                <span class="value">64<span class="unit">%</span></span>
+            </div>
+            <div class="card metric-card">
+                <h3>Avg. Tempo (BPM)</h3>
+                <span class="value" style="color: var(--blue-color);">123<span class="unit"></span></span>
+            </div>
+            <div class="card metric-card">
+                <h3>Avg. Valence (Positivity)</h3>
+                <span class="value" style="color: var(--yellow-color);">51<span class="unit">%</span></span>
+            </div>
+
+            <!-- Charts -->
+            <div class="card chart-card">
+                <canvas id="monthlyTrendsChart"></canvas>
+            </div>
+            <div class="card chart-card">
+                <canvas id="featureImportanceChart"></canvas>
+            </div>
+            <div class="card chart-card">
+                <canvas id="genreDistributionChart"></canvas>
+            </div>
+            <div class="card chart-card">
+                <canvas id="keySignatureChart"></canvas>
+            </div>
+            
+            <!-- Table -->
+            <div class="card table-card">
+                 <h3>Top Performing Tracks (Sample)</h3>
+                 <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Track</th>
+                                <th>Artist(s)</th>
+                                <th>Danceability (%)</th>
+                                <th>Energy (%)</th>
+                                <th>BPM</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td>Flowers</td><td>Miley Cyrus</td><td>71</td><td>68</td><td>118</td></tr>
+                            <tr><td>2</td><td>Kill Bill</td><td>SZA</td><td>64</td><td>73</td><td>89</td></tr>
+                            <tr><td>3</td><td>As It Was</td><td>Harry Styles</td><td>52</td><td>73</td><td>174</td></tr>
+                            <tr><td>4</td><td>Seven (feat. Latto)</td><td>Jung Kook</td><td>80</td><td>83</td><td>125</td></tr>
+                            <tr><td>5</td><td>Ella Baila Sola</td><td>Eslabon Armado, Peso Pluma</td><td>67</td><td>76</td><td>148</td></tr>
+                            <tr><td>6</td><td>Cruel Summer</td><td>Taylor Swift</td><td>55</td><td>71</td><td>170</td></tr>
+                            <tr><td>7</td><td>Creepin'</td><td>Metro Boomin, The Weeknd, 21 Savage</td><td>72</td><td>62</td><td>98</td></tr>
+                            <tr><td>8</td><td>Calm Down</td><td>Rema, Selena Gomez</td><td>80</td><td>81</td><td>107</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Commentary -->
+            <div class="card commentary-card">
+                <h3>Analytical Insights & Recommendations</h3>
+                <ul>
+                    <li><b>Dominant Sonic Profile:</b> The most successful songs of 2023 averaged a danceability score of 67% and an energy level of 64%, with an upbeat average tempo of 123 BPM. This points to a listener preference for mid-to-high tempo, rhythmically engaging tracks suitable for active listening environments.</li>
+                    <li><b>Pop Music Reigns Supreme:</b> Pop is the undisputed leading genre, comprising nearly half of the top-streamed songs. This highlights the genre's broad appeal and commercial power. Hip Hop and Latin genres also show significant presence, indicating key growth markets.</li>
+                    <li><b>Seasonal Listening Habits are Key:</b> Danceability peaks sharply in June (+7% from yearly avg.), coinciding with the start of summer. Releasing high-danceability tracks in late spring could capitalize on this trend. Energy levels rise in March and August, suggesting ideal windows for high-energy promotional campaigns.</li>
+                    <li><b>Collaboration is a Powerful Predictor:</b> The number of artists on a track is the single most important feature for predicting streaming success, surpassing individual audio features like energy or valence. This suggests that strategic collaborations are a critical lever for maximizing reach and streams.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chartTextColor = '#e3e3e3';
+        const chartGridColor = 'rgba(224, 224, 224, 0.1)';
+        const chartOptions = (title) => ({
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: { display: true, text: title, color: chartTextColor, font: { size: 16, weight: '600' } },
+                legend: { labels: { color: chartTextColor } }
+            },
+            scales: {
+                y: { beginAtZero: true, ticks: { color: chartTextColor }, grid: { color: chartGridColor } },
+                x: { ticks: { color: chartTextColor }, grid: { color: chartGridColor } }
+            }
+        });
+
+        // --- Chart 1: Monthly Trends (Multi-axis Line Chart) ---
+        new Chart(document.getElementById('monthlyTrendsChart'), {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [
+                    { label: 'Avg. Danceability (%)', data: [65.8, 67.6, 67.4, 68.5, 69, 71.8, 67.3, 67.1, 68.8, 62.9, 65.8, 64.6], borderColor: '#2196F3', backgroundColor: 'rgba(33, 150, 243, 0.2)', tension: 0.3, yAxisID: 'y' },
+                    { label: 'Avg. Energy (%)', data: [66, 65.5, 68.2, 62.5, 63, 65.5, 65, 67.5, 65.5, 60, 62.2, 62], borderColor: '#F44336', backgroundColor: 'rgba(244, 67, 54, 0.2)', tension: 0.3, yAxisID: 'y' }
+                ]
+            },
+            options: chartOptions('Monthly Average Danceability vs. Energy')
+        });
+
+        // --- Chart 2: Feature Importance (Horizontal Bar Chart) ---
+        new Chart(document.getElementById('featureImportanceChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Artist Count', 'Acousticness', 'Danceability', 'Energy', 'Valence'],
+                datasets: [{ label: 'Importance Score', data: [6.8, 6.1, 5.0, 4.2, 3.5], backgroundColor: '#1DB954' }]
+            },
+            options: { ...chartOptions('Key Features for Predicting Stream Success'), indexAxis: 'y', plugins: { legend: { display: false } } }
+        });
+
+        // --- Chart 3: Genre Distribution (Donut Chart) ---
+        new Chart(document.getElementById('genreDistributionChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Pop', 'Hip Hop/Rap', 'Latin', 'R&B', 'Electronic', 'Other'],
+                datasets: [{
+                    label: 'Genre Distribution',
+                    data: [48, 21, 12, 8, 6, 5],
+                    backgroundColor: ['#1DB954', '#2196F3', '#FFC107', '#F44336', '#9C27B0', '#607D8B'],
+                    borderWidth: 0
+                }]
+            },
+            options: { ...chartOptions('Top Genre Distribution'), scales: { y: { display: false }, x: { display: false } } }
+        });
+        
+        // --- Chart 4: Key Signature Distribution (Polar Area Chart) ---
+        new Chart(document.getElementById('keySignatureChart'), {
+            type: 'polarArea',
+            data: {
+                labels: ['C♯/D♭ Major', 'G Major', 'C Major', 'F Major', 'A Major', 'D Major', 'Other'],
+                datasets: [{
+                    label: 'Key Signatures',
+                    data: [18, 14, 12, 11, 9, 8, 28],
+                    backgroundColor: [
+                        'rgba(29, 185, 84, 0.7)', 'rgba(33, 150, 243, 0.7)', 'rgba(255, 193, 7, 0.7)',
+                        'rgba(244, 67, 54, 0.7)', 'rgba(156, 39, 176, 0.7)', 'rgba(255, 87, 34, 0.7)', 'rgba(96, 125, 139, 0.7)'
+                    ]
+                }]
+            },
+            options: {
+                ...chartOptions('Prevalence of Musical Keys'),
+                scales: { r: { grid: { color: chartGridColor }, ticks: { backdropColor: 'transparent', color: chartTextColor } } }
+            }
+        });
+    </script>
+</body>
+</html>
